@@ -209,7 +209,7 @@ class BrowserProcess implements LoggerAwareInterface
                         $this->logger->debug('process: trying to close chrome gracefully');
                         $this->browser->sendCloseMessage();
                     } catch (\Exception $e) {
-                        // log
+                        //log
                         $this->logger->debug('process: closing chrome gracefully - compatibility');
 
                         // close all pages if connected
@@ -275,6 +275,11 @@ class BrowserProcess implements LoggerAwareInterface
                 $this->logger->debug('process: ✗ could not clean temporary resources');
             }
         }
+    }
+
+    public function getProcessId()
+    {
+        return $this->process->getPid();
     }
 
     /**

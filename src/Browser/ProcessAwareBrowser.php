@@ -43,4 +43,12 @@ class ProcessAwareBrowser extends Browser
     {
         return $this->browserProcess->getSocketUri();
     }
+
+    /**
+     * @return int
+     */
+    public function getProcessId(): int
+    {
+        return $this->browserProcess->getProcessId();
+    }
 }

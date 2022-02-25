@@ -89,7 +89,7 @@ class PageLayoutMetrics extends ResponseWaiter
      */
     public function getCssContentSize(): array
     {
-        return $this->getResultData('cssContentSize') ?? $this->getContentSize();
+        return $this->getResultData('cssContentSize');
     }
 
     /**
@@ -103,7 +103,7 @@ class PageLayoutMetrics extends ResponseWaiter
      */
     public function getCssLayoutViewport(): array
     {
-        return $this->getResultData('cssLayoutViewport') ?? $this->getLayoutViewport();
+        return $this->getResultData('cssLayoutViewport');
     }
 
     /**
@@ -117,7 +117,7 @@ class PageLayoutMetrics extends ResponseWaiter
      */
     public function getCssVisualViewport()
     {
-        return $this->getResultData('cssVisualViewport') ?? $this->getVisualViewport();
+        return $this->getResultData('cssVisualViewport');
     }
 
     /** @param 'layoutViewport'|'visualViewport'|'contentSize'|'cssLayoutViewport'|'cssVisualViewport'|'cssContentSize' $key */
