@@ -24,7 +24,7 @@ Happy browsing!
 
 ## Requirements
 
-Requires PHP 7.3-8.0 and a chrome/chromium 65+ executable.
+Requires PHP 7.3-8.1 and a chrome/chromium 65+ executable.
 
 Note that the library is only tested on Linux but is compatible with macOS and Windows.
 
@@ -186,6 +186,12 @@ Here are the options available for the browser factory:
 $page = $browser->createPage();
 ```
 
+#### Get opened pages (tabs)
+
+```php
+$pages = $browser->getPages();
+```
+
 #### Close the browser
 
 ```php
@@ -220,6 +226,8 @@ When using ``$navigation->waitForNavigation()`` you will wait for 30sec until th
 You can change the timeout or the event to listen for:
 
 ```php
+use HeadlessChromium\Page;
+
 // wait 10secs for the event "DOMContentLoaded" to be triggered
 $navigation->waitForNavigation(Page::DOM_CONTENT_LOADED, 10000);
 ```
@@ -306,6 +314,16 @@ $page->addScriptTag([
 
 $page->evaluate('$(".my.element").html()');
 ```
+
+#### Set the page HTML
+
+You can manually inject html to a page using the ```setHtml``` method.
+
+```php
+$page->setHtml('<p>text</p>');
+```
+
+Note that this will not append to the current page html, it will completely replace it.
 
 #### Get the page HTML
 
@@ -457,7 +475,7 @@ header('Pragma: public');
 echo base64_decode($pdf->getBase64());
 ```
 
-Options `headerTempalte` and `footerTempalte`:
+Options `headerTemplate` and `footerTemplate`:
 
 Should be valid HTML markup with the following classes used to inject printing values into them:
 - date: formatted print date
@@ -729,7 +747,7 @@ $elem->sendKeys('Sample text');
 You can upload file to file from the input:
 
 ```php
-$elem->uploadFile('/path/to/file');
+$elem->sendFile('/path/to/file');
 ```
 
 You can get element text or attribute:

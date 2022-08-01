@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## 1.6.1 (2022-05-17)
+
+* Support Monolog 3
+
+
+## 1.6.0 (2022-03-30)
+
+* Officially support PHP 8.1
+
+
+## 1.5.0 (2022-03-25)
+
+* Added `Browser::getPages` method
+* Added `Page::waitUntilContainsElement()` method
+* Added `Page::setHtml()` method
+* Added support for XPath by introducing `Selector`
+* Added `Mouse::findElement()` method
+* Switch to flatten mode
+
+
+## 1.4.1 (2022-03-25)
+
+* Added fallback to css layout metrics
+* Added missing destroyed setting
+* Prevent `Node::querySelector` from returning nodeId `0`
+* Fixed "What's new" page opening on startup
+* More fixes to enable eventual PHP 8.1 support
+
+
 ## 1.4.0 (2022-01-23)
 
 * Added support for `--no-proxy-server` and `--proxy-bypass-list`
