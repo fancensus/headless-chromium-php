@@ -176,13 +176,19 @@ class Page
      * @see https://chromedevtools.github.io/devtools-protocol/1-2/Network/#method-setExtraHTTPHeaders
      *
      * @param array<string, string> $headers
+     *
+     * @throws CommunicationException
      */
     public function setExtraHTTPHeaders(array $headers = []): void
     {
-        $this->getSession()->sendMessage(new Message(
+        $response = $this->getSession()->sendMessage(new Message(
             'Network.setExtraHTTPHeaders',
-            $headers
-        ));
+            ['headers' => $headers]
+        ))->waitForResponse();
+
+        if (false === $response->isSuccessful()) {
+            throw new CommunicationException($response->getErrorMessage());
+        }
     }
 
     /**
@@ -190,7 +196,7 @@ class Page
      * @param array  $options
      *                        - strict: make waitForNAvigation to fail if a new navigation is initiated. Default: false
      *
-     * @throws Exception\CommunicationException
+     * @throws CommunicationException
      *
      * @return PageNavigation
      */
@@ -213,7 +219,7 @@ class Page
      *
      * @param string $expression
      *
-     * @throws Exception\CommunicationException
+     * @throws CommunicationException
      *
      * @return PageEvaluation
      */
@@ -849,10 +855,12 @@ class Page
     /**
      * Sets the raw html of the current page.
      *
-     * @throws Exception\CommunicationException
+     * @throws CommunicationException
      */
     public function setHtml(string $html, int $timeout = 3000): void
     {
+        $time = \hrtime(true) / 1000 / 1000;
+
         $this->getSession()->sendMessageSync(
             new Message(
                 'Page.setDocumentContent',
@@ -860,16 +868,19 @@ class Page
                     'frameId' => $this->getFrameManager()->getMainFrame()->getFrameId(),
                     'html' => $html,
                 ]
-            )
+            ),
+            $timeout
         );
 
-        $this->waitForReload(self::LOAD, $timeout, '');
+        $timeout -= (int) \floor((\hrtime(true) / 1000 / 1000) - $time);
+
+        $this->waitForReload(self::LOAD, \max(0, $timeout), '');
     }
 
     /**
      * Gets the raw html of the current page.
      *
-     * @throws Exception\CommunicationException
+     * @throws CommunicationException
      */
     public function getHtml(?int $timeout = null): string
     {

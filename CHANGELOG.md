@@ -1,6 +1,24 @@
 # CHANGELOG
 
 
+## 1.7.1 (2022-09-04)
+
+* Fix command execution in `AutoDiscover`
+
+
+## 1.7.0 (2022-08-28)
+
+* Use `command` to guess the chrome executable in Linux
+* Officially support PHP 8.2
+* Fix extra HTTP headers
+
+
+## 1.6.2 (2022-08-28)
+
+* Fix intermittency in `Mouse::findElement()`
+* Fix scroll with values higher than possible
+
+
 ## 1.6.1 (2022-05-17)
 
 * Support Monolog 3
