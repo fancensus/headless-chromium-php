@@ -19,6 +19,9 @@ class Dom extends Node
         parent::__construct($page, $rootNodeId);
     }
 
+    /**
+     * @return Node[]
+     */
     public function search(string $selector): array
     {
         $message = new Message('DOM.performSearch', [

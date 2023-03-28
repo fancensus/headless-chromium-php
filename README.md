@@ -24,7 +24,7 @@ Happy browsing!
 
 ## Requirements
 
-Requires PHP 7.3-8.2 and a chrome/chromium 65+ executable.
+Requires PHP 7.4-8.2 and a chrome/chromium 65+ executable.
 
 Note that the library is only tested on Linux but is compatible with macOS and Windows.
 
@@ -176,6 +176,7 @@ Here are the options available for the browser factory:
 | `startupTimeout`          | `30`    | Maximum time in seconds to wait for chrome to start                                          |
 | `userAgent`               | none    | User agent to use for the whole browser (see page API for alternative)                       |
 | `userDataDir`             | none    | Chrome user data dir (default: a new empty dir is generated temporarily)                     |
+| `userCrashDumpsDir`       | none    | The directory crashpad should store dumps in (crash reporter will be enabled automatically)  |
 | `windowSize`              | none    | Size of the window. usage: `$width, $height` - see also Page::setViewport                    |
 
 
@@ -350,10 +351,16 @@ $page->evaluate('$(".my.element").html()');
 You can manually inject html to a page using the ```setHtml``` method.
 
 ```php
+// Basic
 $page->setHtml('<p>text</p>');
+
+// Specific timeout & event
+$page->setHtml('<p>text</p>', 10000, Page::NETWORK_IDLE);
 ```
 
-Note that this will not append to the current page html, it will completely replace it.
+When a page's HTML is updated, we'll wait for the page to unload. You can specify how long to wait and which event to wait for through two optional parameters. This defaults to 3000ms and the "load" event.
+
+Note that this method will not append to the current page HTML, it will completely replace it.
 
 #### Get the page HTML
 
@@ -481,7 +488,7 @@ $options = [
     'marginLeft'          => 5.0,              // defaults to ~0.4 (must be a float, value in inches)
     'marginRight'         => 1.0,              // defaults to ~0.4 (must be a float, value in inches)
     'paperWidth'          => 6.0,              // defaults to 8.5 (must be a float, value in inches)
-    'paperHeight'         => 6.0,              // defaults to 8.5 (must be a float, value in inches)
+    'paperHeight'         => 6.0,              // defaults to 11.0 (must be a float, value in inches)
     'headerTemplate'      => '<div>foo</div>', // see details above
     'footerTemplate'      => '<div>foo</div>', // see details above
     'scale'               => 1.2,              // defaults to 1.0 (must be a float)

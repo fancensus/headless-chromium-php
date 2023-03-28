@@ -299,6 +299,9 @@ class BrowserProcess implements LoggerAwareInterface
             // auto debug port
             '--remote-debugging-port=0',
 
+            // allow remote access
+            '--remote-allow-origins=*',
+
             // disable undesired features
             '--disable-background-networking',
             '--disable-background-timer-throttling',
@@ -347,6 +350,11 @@ class BrowserProcess implements LoggerAwareInterface
             }
 
             $args[] = '--window-size='.\implode(',', $options['windowSize']);
+        }
+
+        if (\array_key_exists('userCrashDumpsDir', $options)) {
+            $args[] = '--enable-crash-reporter';
+            $args[] = '--crash-dumps-dir='.$options['userCrashDumpsDir'];
         }
 
         // sandbox mode - useful if you want to use chrome headless inside docker
@@ -438,6 +446,7 @@ class BrowserProcess implements LoggerAwareInterface
 
                                 return $matches[1];
                             } elseif (\preg_match('/Cannot start http server for devtools\./', $output, $matches)) {
+                                $process->stop();
                                 throw new \RuntimeException('Devtools could not start');
                             } else {
                                 // log

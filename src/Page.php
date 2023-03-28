@@ -857,7 +857,7 @@ class Page
      *
      * @throws CommunicationException
      */
-    public function setHtml(string $html, int $timeout = 3000): void
+    public function setHtml(string $html, int $timeout = 3000, string $eventName = self::LOAD): void
     {
         $time = \hrtime(true) / 1000 / 1000;
 
@@ -874,7 +874,7 @@ class Page
 
         $timeout -= (int) \floor((\hrtime(true) / 1000 / 1000) - $time);
 
-        $this->waitForReload(self::LOAD, \max(0, $timeout), '');
+        $this->waitForReload($eventName, \max(0, $timeout), '');
     }
 
     /**
