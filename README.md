@@ -162,6 +162,7 @@ Here are the options available for the browser factory:
 | `connectionDelay`         | `0`     | Delay to apply between each operation for debugging purposes                                 |
 | `customFlags`             | none    | An array of flags to pass to the command line. Eg: `['--option1', '--option2=someValue']`    |
 | `debugLogger`             | `null`  | A string (e.g "php://stdout"), or resource, or PSR-3 logger instance to print debug messages |
+| `disableNotifications`    | `false` | Disable browser notifications                                                                |
 | `enableImages`            | `true`  | Toggles loading of images                                                                    |
 | `envVariables`            | none    | An array of environment variables to pass to the process (example DISPLAY variable)          |
 | `headers`                 | none    | An array of custom HTTP headers                                                              |
@@ -266,6 +267,12 @@ $navigation->waitForNavigation(Page::DOM_CONTENT_LOADED, 10000);
 Available events (in the order they trigger):
 
 - ``Page::DOM_CONTENT_LOADED``: dom has completely loaded
+- ``Page::FIRST_CONTENTFUL_PAINT``: triggered when the first non-white content element is painted on the screen
+- ``Page::FIRST_IMAGE_PAINT``: triggered when the first image is painted on the screen
+- ``Page::FIRST_MEANINGFUL_PAINT``: triggered when the primary content of a page is visible to the user
+- ``Page::FIRST_PAINT``: triggered when any pixel on the screen is painted, including the browser's default background color
+- ``Page::INIT``: connection to DevTools protocol is initialized
+- ``Page::INTERACTIVE_TIME``: scripts have finished loading and the main thread is no longer blocked by rendering or other tasks
 - ``Page::LOAD``: (default) page and all resources are loaded
 - ``Page::NETWORK_IDLE``: page has loaded, and no network activity has occurred for at least 500ms
 

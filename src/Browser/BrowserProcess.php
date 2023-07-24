@@ -323,6 +323,11 @@ class BrowserProcess implements LoggerAwareInterface
             '--use-mock-keychain', // osX only
         ];
 
+        // disable browser notifications
+        if (\array_key_exists('disableNotifications', $options) && (true === $options['disableNotifications'])) {
+            $args[] = '--disable-notifications';
+        }
+
         // enable headless mode
         if (!\array_key_exists('headless', $options) || $options['headless']) {
             // enable the new headless mode available from Chrome 112 and up
