@@ -101,7 +101,7 @@ class DomTest extends BaseTestCase
             ->getReturnValue();
 
         // checks if the input contains the typed text
-        self::assertEquals('bar', $value);
+        self::assertSame('bar', $value);
     }
 
     public function testGetText(): void
@@ -112,7 +112,7 @@ class DomTest extends BaseTestCase
 
         $value = $element->getText();
 
-        self::assertEquals('bar', $value);
+        self::assertSame('bar', $value);
     }
 
     public function testGetAttribute(): void
@@ -123,7 +123,7 @@ class DomTest extends BaseTestCase
 
         $value = $element->getAttribute('type');
 
-        self::assertEquals('foo', $value);
+        self::assertSame('foo', $value);
     }
 
     public function testSetAttribute(): void
@@ -136,7 +136,7 @@ class DomTest extends BaseTestCase
 
         $value = $element->getAttribute('type');
 
-        self::assertEquals('hello', $value);
+        self::assertSame('hello', $value);
     }
 
     public function testUploadFile(): void
@@ -172,5 +172,19 @@ class DomTest extends BaseTestCase
         // check if the files were selected
         self::assertStringEndsWith(\basename($files[0]), $value1);
         self::assertStringEndsWith(\basename($files[1]), $value2);
+    }
+
+    public function testSetHTML(): void
+    {
+        $page = $this->openSitePage('domForm.html');
+
+        $element = $page->dom()->querySelector('#div1');
+        $element->setHTML('<span id="span">hello</span>');
+
+        $value = $page->dom()->querySelector('#span')->getHTML();
+
+        self::assertCount(0, $page->dom()->querySelectorAll('#div1'));
+
+        self::assertEquals('<span id="span">hello</span>', $value);
     }
 }

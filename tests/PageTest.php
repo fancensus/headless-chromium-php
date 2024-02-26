@@ -13,6 +13,7 @@ namespace HeadlessChromium\Test;
 
 use finfo;
 use HeadlessChromium\BrowserFactory;
+use HeadlessChromium\Dom\Selector\XPathSelector;
 use HeadlessChromium\Exception\InvalidTimezoneId;
 
 /**
@@ -20,6 +21,9 @@ use HeadlessChromium\Exception\InvalidTimezoneId;
  */
 class PageTest extends BaseTestCase
 {
+    private const WAIT_FOR_ELEMENT_HTML = '<div data-name="el">content</div>';
+    private const WAIT_FOR_ELEMENT_RESOURCE_FILE = 'elementLoad.html';
+
     public function testSetViewport(): void
     {
         $factory = new BrowserFactory();
@@ -55,8 +59,8 @@ class PageTest extends BaseTestCase
         $value1 = $pageFooBar->evaluate('navigator.userAgent')->getReturnValue();
         $value2 = $pageBarBaz->evaluate('navigator.userAgent')->getReturnValue();
 
-        self::assertEquals('foobar', $value1);
-        self::assertEquals('barbaz', $value2);
+        self::assertSame('foobar', $value1);
+        self::assertSame('barbaz', $value2);
     }
 
     public function testSetTimezone(): void
@@ -148,22 +152,22 @@ class PageTest extends BaseTestCase
         $page->navigate(self::sitePath('a.html'))->waitForNavigation();
         $fooValue = $page->evaluate('navigator.foo')->getReturnValue();
         $barValue = $page->evaluate('navigator.bar')->getReturnValue();
-        self::assertEquals(1, $fooValue);
-        self::assertEquals(11, $barValue);
+        self::assertSame(1, $fooValue);
+        self::assertSame(11, $barValue);
 
         // make sure prescript is not adding again and again on every requests
         $page->navigate(self::sitePath('b.html'))->waitForNavigation();
         $fooValue = $page->evaluate('navigator.foo')->getReturnValue();
         $barValue = $page->evaluate('navigator.bar')->getReturnValue();
-        self::assertEquals(1, $fooValue);
-        self::assertEquals(11, $barValue);
+        self::assertSame(1, $fooValue);
+        self::assertSame(11, $barValue);
 
         // make sure prescript did not pollute other pages
         $page2->navigate(self::sitePath('b.html'))->waitForNavigation();
         $fooValue = $page2->evaluate('navigator.foo')->getReturnValue();
         $barValue = $page2->evaluate('navigator.bar')->getReturnValue();
-        self::assertEquals(null, $fooValue);
-        self::assertEquals(null, $barValue);
+        self::assertNull($fooValue);
+        self::assertNull($barValue);
     }
 
     public function testCallFunction(): void
@@ -174,8 +178,8 @@ class PageTest extends BaseTestCase
         $page = $browser->createPage();
         $evaluation = $page->callFunction('function(a, b) { window.foo = a + b; return window.foo;}', [1, 2]);
 
-        self::assertEquals(3, $evaluation->getReturnValue());
-        self::assertEquals(3, $page->evaluate('window.foo')->getReturnValue());
+        self::assertSame(3, $evaluation->getReturnValue());
+        self::assertSame(3, $page->evaluate('window.foo')->getReturnValue());
     }
 
     public function testCallFunctionPromise(): void
@@ -192,7 +196,7 @@ class PageTest extends BaseTestCase
             })
         }', [1, 2]);
 
-        self::assertEquals(3, $evaluation->getReturnValue());
+        self::assertSame(3, $evaluation->getReturnValue());
     }
 
     public function testEvaluatePromise(): void
@@ -207,7 +211,7 @@ class PageTest extends BaseTestCase
             }, 100);
         })');
 
-        self::assertEquals(11, $evaluation->getReturnValue());
+        self::assertSame(11, $evaluation->getReturnValue());
     }
 
     public function testAddScriptTagContent(): void
@@ -220,7 +224,7 @@ class PageTest extends BaseTestCase
             'content' => 'window.foo = "bar";',
         ])->waitForResponse();
 
-        self::assertEquals('bar', $page->evaluate('window.foo')->getReturnValue());
+        self::assertSame('bar', $page->evaluate('window.foo')->getReturnValue());
     }
 
     public function testAddScriptTagUrl(): void
@@ -240,7 +244,7 @@ class PageTest extends BaseTestCase
         $isIncluded = $page->evaluate('window.testJsIsIncluded')->getReturnValue();
         $scriptSrc = $page->evaluate('document.querySelector("script").getAttribute("src")')->getReturnValue();
 
-        self::assertEquals('isIncluded', $isIncluded);
+        self::assertSame('isIncluded', $isIncluded);
         self::assertStringStartsWith('file://', $scriptSrc);
         self::assertStringEndsWith('/jsInclude.js', $scriptSrc);
     }
@@ -379,10 +383,10 @@ class PageTest extends BaseTestCase
 
         $clip = $page->getFullPageClip();
 
-        self::assertEquals(0, $clip->getX());
-        self::assertEquals(0, $clip->getY());
-        self::assertEquals(900, $clip->getWidth());
-        self::assertEquals(1000, $clip->getHeight());
+        self::assertSame(0, $clip->getX());
+        self::assertSame(0, $clip->getY());
+        self::assertSame(900, $clip->getWidth());
+        self::assertSame(1000, $clip->getHeight());
     }
 
     public function testPdf(): void
@@ -433,11 +437,29 @@ class PageTest extends BaseTestCase
         $browser = $factory->createBrowser();
         $page = $browser->createPage();
 
-        $page->navigate(self::sitePath('elementLoad.html'))->waitForNavigation();
+        $page->navigate(self::sitePath(self::WAIT_FOR_ELEMENT_RESOURCE_FILE))->waitForNavigation();
+
+        self::assertStringNotContainsString(self::WAIT_FOR_ELEMENT_HTML, $page->getHtml());
 
         $page->waitUntilContainsElement('div[data-name=\"el\"]');
 
-        self::assertStringContainsString('<div data-name="el"></div>', $page->getHtml());
+        self::assertStringContainsString(self::WAIT_FOR_ELEMENT_HTML, $page->getHtml());
+    }
+
+    public function testWaitUntilContainsElementByXPath(): void
+    {
+        $factory = new BrowserFactory();
+
+        $browser = $factory->createBrowser();
+        $page = $browser->createPage();
+
+        $page->navigate(self::sitePath(self::WAIT_FOR_ELEMENT_RESOURCE_FILE))->waitForNavigation();
+
+        self::assertStringNotContainsString(self::WAIT_FOR_ELEMENT_HTML, $page->getHtml());
+
+        $page->waitUntilContainsElement(new XPathSelector('//div[contains(text(), "content")]'));
+
+        self::assertStringContainsString(self::WAIT_FOR_ELEMENT_HTML, $page->getHtml());
     }
 
     public function testSetExtraHTTPHeaders(): void
@@ -460,5 +482,29 @@ class PageTest extends BaseTestCase
 
         $target = $browser->findTarget('page', 'bigLayout.html');
         self::assertSame('bigLayout.html', $target->getTargetInfo('title'));
+    }
+
+    public function testSetScriptExecution(): void
+    {
+        $factory = new BrowserFactory();
+
+        $browser = $factory->createBrowser();
+        $page = $browser->createPage();
+
+        $page->setScriptExecution(false);
+        $page->navigate($this->sitePath('javascript.html'))->waitForNavigation();
+
+        self::assertEquals(
+            'javascript disabled',
+            $page->evaluate('document.body.innerText')->getReturnValue()
+        );
+
+        $page->setScriptExecution(true);
+        $page->navigate($this->sitePath('javascript.html'))->waitForNavigation();
+
+        self::assertEquals(
+            'javascript enabled',
+            $page->evaluate('document.body.innerText')->getReturnValue()
+        );
     }
 }

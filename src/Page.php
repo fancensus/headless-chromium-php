@@ -18,10 +18,13 @@ use HeadlessChromium\Cookies\Cookie;
 use HeadlessChromium\Cookies\CookiesCollection;
 use HeadlessChromium\Dom\Dom;
 use HeadlessChromium\Dom\Selector\CssSelector;
+use HeadlessChromium\Dom\Selector\Selector;
 use HeadlessChromium\Exception\CommunicationException;
+use HeadlessChromium\Exception\EvaluationFailed;
 use HeadlessChromium\Exception\InvalidTimezoneId;
 use HeadlessChromium\Exception\JavascriptException;
 use HeadlessChromium\Exception\NoResponseAvailable;
+use HeadlessChromium\Exception\OperationTimedOut;
 use HeadlessChromium\Exception\TargetDestroyed;
 use HeadlessChromium\Input\Keyboard;
 use HeadlessChromium\Input\Mouse;
@@ -457,9 +460,16 @@ class Page
     /**
      * Wait until page contains Node.
      *
-     * @throws Exception\OperationTimedOut
+     * @param string|Selector $selectors
+     * @param int             $timeout
+     *
+     * @throws CommunicationException
+     * @throws EvaluationFailed
+     * @throws OperationTimedOut
+     *
+     * @return Page
      */
-    public function waitUntilContainsElement(string $selectors, int $timeout = 30000): self
+    public function waitUntilContainsElement($selectors, int $timeout = 30000): self
     {
         $this->assertNotClosed();
 
@@ -469,18 +479,28 @@ class Page
     }
 
     /**
+     * @param string|Selector $selectors
+     * @param int             $position
+     *
+     * @throws CommunicationException
+     * @throws EvaluationFailed
+     *
      * @return bool|\Generator
      *
      * @internal
      */
-    public function waitForElement(string $selectors, int $position = 1)
+    public function waitForElement($selectors, int $position = 1)
     {
+        if (!($selectors instanceof Selector)) {
+            $selectors = new CssSelector($selectors);
+        }
+
         $delay = 500;
         $element = [];
 
         while (true) {
             try {
-                $element = Utils::getElementPositionFromPage($this, new CssSelector($selectors), $position);
+                $element = Utils::getElementPositionFromPage($this, $selectors, $position);
             } catch (JavascriptException $exception) {
                 yield $delay;
             }
@@ -569,7 +589,8 @@ class Page
      * $screenshot = $page->screenshot([
      *     'captureBeyondViewport' => true,
      *     'clip' => $page->getFullPageClip(),
-     *     'format' => 'jpeg', // default to 'png' - possible values: 'png', 'jpeg',
+     *     'format' => 'jpeg', // default to 'png' - possible values: 'png', 'jpeg', 'webp'
+     *     'optimizeForSpeed' => true, // default to false - Optimize image encoding for speed, not for resulting size
      * ]);
      *
      * // save the screenshot
@@ -604,15 +625,15 @@ class Page
         }
 
         // make sure format is valid
-        if (!\in_array($screenshotOptions['format'], ['png', 'jpeg'])) {
-            throw new \InvalidArgumentException('Invalid options "format" for page screenshot. Format must be "png" or "jpeg".');
+        if (!\in_array($screenshotOptions['format'], ['png', 'jpeg', 'webp'])) {
+            throw new \InvalidArgumentException('Invalid options "format" for page screenshot. Format must be "png", "jpeg" or "webp".');
         }
 
         // get quality
         if (\array_key_exists('quality', $options)) {
-            // quality requires type to be jpeg
-            if ('jpeg' !== $screenshotOptions['format']) {
-                throw new \InvalidArgumentException('Invalid options "quality" for page screenshot. Quality requires the image format to be "jpeg".');
+            // quality requires type to be jpeg or webp
+            if (!\in_array($screenshotOptions['format'], ['jpeg', 'webp'])) {
+                throw new \InvalidArgumentException('Invalid options "quality" for page screenshot. Quality requires the image format to be "jpeg" or "webp".');
             }
 
             // quality must be an integer
@@ -644,6 +665,15 @@ class Page
                 'height' => $options['clip']->getHeight(),
                 'scale' => $options['clip']->getScale(),
             ];
+        }
+
+        // optimize for speed
+        if (\array_key_exists('optimizeForSpeed', $options)) {
+            if (!\is_bool($options['optimizeForSpeed'])) {
+                throw new \InvalidArgumentException('Invalid options "optimizeForSpeed" for page screenshot. OptimizeForSpeed must be a boolean value.');
+            }
+
+            $screenshotOptions['optimizeForSpeed'] = $options['optimizeForSpeed'];
         }
 
         // request screenshot
@@ -812,7 +842,7 @@ class Page
     }
 
     /**
-     * Set user agent for the current page.
+     * Set timezone for the current page.
      *
      * @see https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt | ICU’s metaZones.txt
      *
@@ -1065,6 +1095,23 @@ class Page
             ->sendMessage(
                 new Message('Network.setUserAgentOverride', ['userAgent' => $userAgent])
             );
+
+        return new ResponseWaiter($response);
+    }
+
+    /**
+     * Disable or enable JavaScript execution for the current page.
+     *
+     * @throws CommunicationException
+     */
+    public function setScriptExecution(bool $enabled): ResponseWaiter
+    {
+        // ensure target is not closed
+        $this->assertNotClosed();
+
+        $response = $this->getSession()->sendMessage(
+            new Message('Emulation.setScriptExecutionDisabled', ['value' => !$enabled])
+        );
 
         return new ResponseWaiter($response);
     }
