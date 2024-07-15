@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## 1.11.0 (2024-03-17)
+
+* Add PHP 8.3 support
+* Auto-detect Chromium too
+
+
+## 1.10.1 (2024-03-17)
+
+* Fixed encoding bugs in `XPathSelector`
+
+
 ## 1.10.0 (2023-12-10)
 
 * Add `Add Node::setHTML` method
