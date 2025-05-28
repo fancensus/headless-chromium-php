@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## 1.14.0 (2025-05-28)
+
+* Use more specific return type in `PageScreenshot::getException`
+* Security fix for missing encoding in `CssSelector`
+
+
 ## 1.13.0 (2025-02-07)
 
 * Set maximal expires value if `session=false` in `Page::setCookies`
