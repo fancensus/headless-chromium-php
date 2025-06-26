@@ -234,7 +234,7 @@ class Node
     public function assertNotError(Response $response): void
     {
         if (!$response->isSuccessful()) {
-            throw new DOMException($response->getErrorMessage());
+            throw new DomException($response->getErrorMessage());
         }
     }
 
