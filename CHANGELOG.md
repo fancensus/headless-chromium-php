@@ -1,7 +1,7 @@
 # CHANGELOG
 
 
-## 1.15.0 (UPCOMING)
+## 1.15.0 (2025-12-27)
 
 * Add PHP 8.5 support
 * Add support for using Symfony 8 components
