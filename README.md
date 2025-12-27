@@ -194,8 +194,10 @@ The next calls to the script will read the uri from that file in order to connec
 use \HeadlessChromium\BrowserFactory;
 use \HeadlessChromium\Exception\BrowserConnectionFailed;
 
+$socketFile = '/tmp/chrome-php-demo-socket';
+
 // path to the file to store websocket's uri
-$socket = \file_get_contents('/tmp/chrome-php-demo-socket');
+$socket = \file_get_contents($socketFile);
 
 try {
     $browser = BrowserFactory::connectToBrowser($socket);
@@ -317,7 +319,6 @@ Sometimes the script you evaluate will click a link or submit a form, in this ca
 will want to wait for the new page to reload.
 
 You can achieve this by using ``$page->evaluate('some js that will reload the page')->waitForPageReload()``.
-An example is available in [form-submit.php](./examples/form-submit.php)
 
 #### Call a function
 
